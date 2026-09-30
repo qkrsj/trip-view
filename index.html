@@ -1203,7 +1203,7 @@ const TripLogic = (function () {
   // ---------- 타임라인 ----------
   const SLOW = 2.8; // 이동 시간 배율 (클수록 느려짐 — 지도가 움직이며 타일을 불러올 시간을 준다)
   const DUR = {
-    plane:  { a: 2.6,  b: 0.06, min: 3.6, max: 8.5 },
+    plane:  { a: 2.2,  b: 0.05, min: 3.0, max: 7.2 },
     train:  { a: 3.2,  b: 0.22, min: 5.5, max: 12 }, // 기차가 유독 빨랐던 것을 크게 늦춤(거리에 더 민감하게)
     subway: { a: 1.6,  b: 0.45, min: 2.1, max: 3.6 },
     tram:   { a: 1.6,  b: 0.45, min: 2.1, max: 3.6 },
