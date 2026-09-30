@@ -146,7 +146,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .hudbtns { display: flex; gap: 6px; flex: none; pointer-events: none; }
 .hudbtns .pill-btn { pointer-events: auto; }
-@media (max-width: 520px) { .hudbtns { gap: 4px; } .hudbtns .pill-btn { padding: 8px 10px; font-size: 12.5px; } #title { font-size: 16px; padding: 6px 10px; } }
+@media (max-width: 520px) {
+  .row { flex-wrap: wrap; row-gap: 6px; }
+  #title { flex: 1 1 100%; font-size: 16px; padding: 6px 10px; }
+  .hudbtns { flex: 1 1 100%; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
+  .hudbtns .pill-btn {
+    padding: 9px 12px; font-size: 12.5px; min-height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+}
 
 /* 장소 검색 */
 #searchPanel {
@@ -229,10 +237,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .ev[aria-current="true"] { background: var(--accent); color: var(--on-accent); border-color: transparent; opacity: 1; }
 .ev[aria-current="true"] .t { color: inherit; }
 .ibtn { width: 36px; height: 44px; border-radius: 10px; font-size: 13px; }
+@media (max-width: 520px) {
+  /* 하단 컨트롤: 이벤트 목록을 한 줄로 올리고, 이전/자동/다음 버튼은 아래 줄에 여유 있게 배치 */
+  #controls { flex-wrap: wrap; justify-content: center; gap: 10px 16px; padding: 10px 12px; }
+  #events { order: -1; flex: 1 1 100%; }
+  #prev, #next { width: 48px; height: 48px; }
+  .auto { height: 48px; padding: 0 20px; font-size: 13.5px; }
+}
 
 /* 일차 카드 */
 #dayCard {
-  position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 138px); z-index: 3; text-align: center; pointer-events: none;
+  position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + var(--hudb, 138px) + 14px); z-index: 3; text-align: center; pointer-events: none;
   transform: translate(-50%, 12px) scale(.94); opacity: 0;
   transition: opacity .35s ease, transform .35s ease;
   background: var(--panel); border: 1px solid var(--line); border-radius: 22px;
