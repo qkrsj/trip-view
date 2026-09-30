@@ -146,6 +146,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .hudbtns { display: flex; gap: 6px; flex: none; pointer-events: none; }
 .hudbtns .pill-btn { pointer-events: auto; }
+/* 선택/검색/3D 묶음: 넓은 화면에서는 그냥 나란히(각 버튼 그대로), 좁은 화면에서는 '설정' 버튼 하나로 접는다 */
+.settings-wrap { display: contents; }
+.settings-menu { display: contents; }
+.settings-menu[hidden] { display: contents; }
+#settingsBtn { display: none; }
 @media (max-width: 520px) {
   .row { flex-wrap: wrap; row-gap: 6px; }
   #title { flex: 1 1 100%; font-size: 16px; padding: 6px 10px; }
@@ -154,6 +159,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     padding: 9px 12px; font-size: 12.5px; min-height: 40px;
     display: inline-flex; align-items: center; justify-content: center;
   }
+  .settings-wrap { display: inline-flex; position: relative; pointer-events: none; }
+  #settingsBtn { display: inline-flex; pointer-events: auto; }
+  .settings-menu {
+    display: flex; flex-direction: column; gap: 8px;
+    position: absolute; top: calc(100% + 8px); left: 0; min-width: 170px; z-index: 6;
+    background: var(--panel-solid); border: 1px solid var(--line); border-radius: 14px;
+    padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.2); pointer-events: auto;
+  }
+  .settings-menu[hidden] { display: none; }
+  .settings-menu .pill-btn { width: 100%; }
+  .settings-menu #searchBtn::after { content: ' 검색'; }
 }
 
 /* 장소 검색 */
@@ -430,11 +446,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     <div class="row">
       <h1 id="title">1일차</h1>
       <div class="hudbtns">
-        <button id="lineModeBtn" class="pill-btn" type="button" title="지도에 표시할 이동선 범위를 바꿔요">선: 당일</button>
-        <button id="searchBtn" class="pill-btn" type="button" aria-expanded="false" aria-controls="searchPanel" aria-label="장소 검색" title="장소 검색">🔍</button>
-        <button id="tdBtn" class="pill-btn tog" type="button" aria-pressed="false" title="지도를 기울여 3D 건물로 보기">🏙 3D</button>
+        <span class="settings-wrap">
+          <button id="settingsBtn" class="pill-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="settingsMenu" title="설정">⚙️ 설정</button>
+          <div id="settingsMenu" class="settings-menu" hidden>
+            <button id="lineModeBtn" class="pill-btn" type="button" title="지도에 표시할 이동선 범위를 바꿔요">선: 당일</button>
+            <button id="searchBtn" class="pill-btn" type="button" aria-expanded="false" aria-controls="searchPanel" aria-label="장소 검색" title="장소 검색">🔍</button>
+            <button id="tdBtn" class="pill-btn tog" type="button" aria-pressed="false" title="지도를 기울여 3D 건물로 보기">🏙 3D</button>
+          </div>
+        </span>
         <button id="cityBtn" class="pill-btn" type="button" aria-controls="cityView" title="나라·도시별로 확대해서 볼 곳을 한눈에 보기">🗺️ 도시별</button>
-        <button id="planBtn" class="pill-btn" type="button" aria-expanded="false" aria-controls="sheet">캐릭터</button>
+        <button id="planBtn" class="pill-btn" type="button" aria-expanded="false" aria-controls="sheet">일정표</button>
       </div>
     </div>
     <div class="capline">
@@ -476,7 +497,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     </div>
   </div>
 
-  <aside id="sheet" aria-label="캐릭터 설정" inert>
+  <aside id="sheet" aria-label="일정표" inert>
     <div class="sheet-head">
       <h2>캐릭터</h2>
       <div class="sheet-btns">
@@ -2568,6 +2589,17 @@ if (typeof module !== 'undefined') module.exports = TripLogic;
   function closeSheet() { const s = $('#sheet'); s.classList.remove('open'); s.setAttribute('inert', ''); $('#planBtn').setAttribute('aria-expanded', 'false'); }
   $('#planBtn').addEventListener('click', () => ($('#sheet').classList.contains('open') ? closeSheet() : openSheet()));
   $('#closeSheet').addEventListener('click', closeSheet);
+
+  // ---------- 설정 묶음(좁은 화면에서 선택/검색/3D를 하나로 접어 보여줌) ----------
+  const settingsBtn = $('#settingsBtn'), settingsMenu = $('#settingsMenu');
+  function openSettings() { settingsMenu.hidden = false; settingsBtn.setAttribute('aria-expanded', 'true'); }
+  function closeSettings() { settingsMenu.hidden = true; settingsBtn.setAttribute('aria-expanded', 'false'); }
+  settingsBtn.addEventListener('click', () => (settingsMenu.hidden ? openSettings() : closeSettings()));
+  settingsMenu.addEventListener('click', (e) => { if (e.target.closest('.pill-btn')) closeSettings(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !settingsMenu.hidden) closeSettings(); });
+  document.addEventListener('pointerdown', (e) => {
+    if (!settingsMenu.hidden && !settingsMenu.contains(e.target) && e.target !== settingsBtn) closeSettings();
+  });
 
   // ---------- 장소 검색 (계획에 있는 장소를 검색해서 그 방문 시점으로 이동) ----------
   const searchBtn = $('#searchBtn'), searchPanel = $('#searchPanel'), searchInput = $('#searchInput'), searchResults = $('#searchResults');
