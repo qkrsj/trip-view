@@ -156,6 +156,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
   padding: 7px 10px; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums;
 }
+#dayBadge {
+  display: none; flex: none; background: var(--accent); color: var(--on-accent); border-radius: 10px;
+  padding: 7px 10px; font-size: 12.5px; font-weight: 700;
+}
 .hudbtns { display: flex; gap: 6px; flex: none; pointer-events: none; }
 .hudbtns .pill-btn { pointer-events: auto; }
 /* 선택/검색/3D 묶음: 넓은 화면에서는 그냥 나란히(각 버튼 그대로), 좁은 화면에서는 '설정' 버튼 하나로 접는다 */
@@ -165,10 +169,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 #settingsBtn { display: none; }
 @media (max-width: 520px) {
   .row { flex-wrap: wrap; row-gap: 6px; }
-  #title { flex: 1 1 100%; font-size: 16px; padding: 6px 10px; }
-  .hudbtns { flex: 1 1 100%; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
+  #title { display: none; }
+  .capline { order: -1; }
+  #dayBadge { display: inline-flex; align-items: center; justify-content: center; }
+  .hudbtns { flex: 1 1 100%; flex-wrap: wrap; gap: 6px; justify-content: flex-start; }
   .hudbtns .pill-btn {
-    padding: 9px 12px; font-size: 12.5px; min-height: 40px;
+    padding: 6px 9px; font-size: 11.5px; min-height: 30px;
     display: inline-flex; align-items: center; justify-content: center;
   }
   .settings-wrap { display: inline-flex; position: relative; pointer-events: none; }
@@ -223,6 +229,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-radius: 8px; padding: 4px 10px; font-size: 12.5px; font-weight: 600; color: var(--ink);
 }
 .chip[aria-current="true"] { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+#dayNow { display: none; flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink-2); padding: 0 2px; }
 #controls {
   pointer-events: auto; display: flex; align-items: center; gap: 6px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 8px 10px;
@@ -266,7 +273,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .ev[aria-current="true"] .t { color: inherit; }
 .ibtn { width: 36px; height: 44px; border-radius: 10px; font-size: 13px; }
 @media (max-width: 520px) {
-  /* 하단 컨트롤: 이벤트 목록을 한 줄로 올리고, 이전/자동/다음 버튼은 아래 줄에 여유 있게 배치 */
+  /* 하단 컨트롤: 이벤트 목록을 한 줄로 올리고, 이전/자동/다음/일정표 버튼은 아래 줄에 여유 있게 배치 */
+  #days { display: none; }
+  #dayNow { display: inline-flex; align-items: center; }
   #controls { flex-wrap: wrap; justify-content: center; gap: 10px 16px; padding: 10px 12px; }
   #events { order: -1; flex: 1 1 100%; }
   #prev, #next { width: 48px; height: 48px; }
@@ -430,11 +439,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .sheet-btns { display: flex; gap: 6px; }
 #sheet h3 { margin: 18px 0 6px; font-size: 14px; }
 #msgs { display: none; }
-.field { display: flex; align-items: center; gap: 10px; }
-#charName { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--field); padding: 8px 10px; }
-#hats { display: flex; gap: 8px; margin-top: 8px; }
-.hat { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
-.hat[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--panel-solid), 0 0 0 4px var(--accent); }
 #legList h4 { margin: 12px 0 4px; font-size: 13px; color: var(--ink-2); }
 #legList .leg {
   display: block; width: 100%; text-align: left; cursor: pointer; background: transparent; border: 0;
@@ -467,10 +471,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
           </div>
         </span>
         <button id="cityBtn" class="pill-btn" type="button" aria-controls="cityView" title="나라·도시별로 확대해서 볼 곳을 한눈에 보기">🗺️ 도시별</button>
-        <button id="planBtn" class="pill-btn" type="button" aria-expanded="false" aria-controls="sheet">일정표</button>
       </div>
     </div>
     <div class="capline">
+      <span id="dayBadge"></span>
       <div id="caption" aria-live="off"></div>
       <div id="legCount" aria-label="구간 진행"></div>
     </div>
@@ -502,27 +506,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   <div id="hudBottom">
     <div id="days" role="group" aria-label="일차로 이동"></div>
     <div id="controls">
+      <span id="dayNow" aria-hidden="true"></span>
       <button id="prev" class="ibtn" type="button" aria-label="이전 이벤트">◀</button>
       <div id="events" role="group" aria-label="이벤트 목록"></div>
       <button id="next" class="ibtn" type="button" aria-label="다음 이벤트">▶</button>
       <button id="auto" class="auto" type="button" aria-pressed="false">자동</button>
+      <button id="planBtn" class="pill-btn" type="button" aria-expanded="false" aria-controls="sheet">일정표</button>
     </div>
   </div>
 
   <aside id="sheet" aria-label="일정표" inert>
     <div class="sheet-head">
-      <h2>캐릭터</h2>
+      <h2>일정표</h2>
       <div class="sheet-btns">
         <button id="closeSheet" class="ibtn" type="button" aria-label="닫기">✕</button>
       </div>
     </div>
     <div id="msgs" aria-live="polite"></div>
-
-    <div class="field">
-      <label for="charName">이름</label>
-      <input id="charName" type="text" maxlength="12" autocomplete="off">
-    </div>
-    <div id="hats" role="group" aria-label="모자 색"></div>
 
     <h3>이벤트 목록</h3>
     <div id="legList"></div>
@@ -1392,11 +1392,10 @@ if (typeof module !== 'undefined') module.exports = TripLogic;
   };
 
   // ---------- 상태 ----------
-  const HATS = ['#ff4d6d', '#ffb020', '#3fc1a5', '#4c8dff', '#a66bff', '#f5f5f5'];
-  const char = { name: '여행자', hat: HATS[0] };
+  const char = { name: '여행자', hat: '#ff4d6d' };
   const state = { plan: null, viewDay: 1 };
   const LINE_MODES = [['day', '선: 당일'], ['all', '선: 전체'], ['one', '선: 구간']];
-  let lineMode = 'day';
+  let lineMode = 'all';
   let events = [];
   let nodes = [];
   // ctl.curIdx: 마지막으로 끝낸 이벤트 번호 (-1이면 출발 전)
@@ -2582,24 +2581,13 @@ if (typeof module !== 'undefined') module.exports = TripLogic;
     return true;
   }
 
-  // ---------- 캐릭터 설정 ----------
-  function renderHats() {
-    const box = $('#hats'); box.textContent = '';
-    HATS.forEach((c) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'hat'; b.style.background = c;
-      b.setAttribute('aria-label', `모자 색 ${c}`); b.setAttribute('aria-pressed', String(c === char.hat));
-      b.addEventListener('click', () => { char.hat = c; renderHats(); saveChar(); });
-      box.appendChild(b);
-    });
-  }
-  function saveChar() { store.set('tripmap:char', JSON.stringify(char)); }
   function updateTitle() {
     const info = state.plan && state.plan.days[state.viewDay];
     const label = info && info.label ? ` ${info.label}` : '';
     $('#title').textContent = `${state.viewDay}일차${label}`;
+    $('#dayBadge').textContent = `${state.viewDay}일차`;
+    $('#dayNow').textContent = `${state.viewDay}일차`;
   }
-  $('#charName').addEventListener('input', (e) => { char.name = e.target.value.slice(0, 12); updateTitle(); saveChar(); });
 
   // ---------- 시트 ----------
   function openSheet() { const s = $('#sheet'); s.classList.add('open'); s.removeAttribute('inert'); $('#planBtn').setAttribute('aria-expanded', 'true'); }
@@ -3593,12 +3581,7 @@ if (typeof module !== 'undefined') module.exports = TripLogic;
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !cityView.hidden && $('#placeInfo').hidden) closeCity(); });
 
   // ---------- 시작 ----------
-  try {
-    const saved = JSON.parse(store.get('tripmap:char') || 'null');
-    if (saved && typeof saved.name === 'string') { char.name = saved.name; if (HATS.includes(saved.hat)) char.hat = saved.hat; }
-  } catch (e) { /* 무시 */ }
-  $('#charName').value = char.name;
-  updateTitle(); renderHats(); updateAutoBtn();
+  updateTitle(); updateAutoBtn();
   closeSheet();
   resize();
   applyPlan(DEFAULT_PLAN);
