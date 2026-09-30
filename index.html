@@ -2174,13 +2174,18 @@ if (typeof module !== 'undefined') module.exports = TripLogic;
     stopData = { src: events, stops, linkAfter };
   }
 
+  // 일정에 도착 시각이 안 적혀 있어 실제 소요시간을 모를 때, 교통수단별 평균 속도로 대략 추정한다(정차·환승·신호 대기 포함한 체감 속도)
+  const AVG_KMH = { plane: 700, train: 100, subway: 25, tram: 15, bus: 18, walk: 4.5, taxi: 22, ship: 30 };
+  const estMinutes = (mode, km) => Math.max(1, Math.round(km / (AVG_KMH[mode] || AVG_KMH.bus) * 60));
+
   function linkText(lk) {
     const M = L.MODES[lk.leg.mode];
     const a = toMin(lk.time), b = toMin(lk.endTime);
-    let m = null;
+    let m = null, approx = false;
     if (a !== null && b !== null) { m = b - a; if (m < 0) m += 1440; }
+    if (m === null) { m = estMinutes(lk.leg.mode, lk.leg.km); approx = true; }
     const bits = [];
-    if (m) bits.push(fmtMin(m));
+    if (m) bits.push((approx ? '약 ' : '') + fmtMin(m));
     bits.push(fmtKm(lk.leg.km));
     return { top: `${M.emoji} ${M.ko} →`, bottom: bits.join(' · ') };
   }
